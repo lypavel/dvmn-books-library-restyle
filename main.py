@@ -12,7 +12,7 @@ def download_txt(index_url: str,
                  text_url: str,
                  book_id: int,
                  title: str,
-                 folder: str | None = 'books/') -> str:
+                 folder: str | None = 'books/') -> Path:
     payload = {
         'id': book_id
     }
@@ -25,6 +25,8 @@ def download_txt(index_url: str,
     download_dir = Path(folder)
     download_dir.mkdir(exist_ok=True)
     filepath = download_dir / f'{book_id}. {title}.txt'
+    if filepath.exists():
+        return filepath
 
     with open(filepath, 'w') as file:
         file.write(response.text)
@@ -32,7 +34,7 @@ def download_txt(index_url: str,
     return filepath
 
 
-def download_image(url: str, folder: str | None = 'images/') -> None:
+def download_image(url: str, folder: str | None = 'images/') -> Path:
     filename = urlsplit(unquote(url)).path.split('/')[-1]
     if filename == 'nopic.gif':
         return
@@ -43,9 +45,13 @@ def download_image(url: str, folder: str | None = 'images/') -> None:
     download_dir = Path(folder)
     download_dir.mkdir(exist_ok=True)
     filepath = download_dir / filename
+    if filepath.exists():
+        return filepath
 
     with open(filepath, 'wb') as file:
         file.write(response.content)
+
+    return filepath
 
 
 def parse_book_page(index_url: str, book_id: int) -> dict:
@@ -85,15 +91,23 @@ def parse_book_page(index_url: str, book_id: int) -> dict:
     }
 
 
-def print_book_info(book: dict):
+def print_book_info(book: dict) -> None:
     print(
         f'Заголовок: {book["title"]}',
         f'Автор: {book["author"]}',
-        book["genres"],
-        '\n'.join(book['comments']),
+        f'Жанры: {book["genres"]}',
         sep='\n'
     )
-    print()  # separate books with '\n'
+
+    comments = book['comments']
+    if comments:
+        print(
+            'Комментарии:',
+            '\n'.join(book['comments']),
+            sep='\n'
+        )
+
+    print()  # separate book info with '\n'
 
 
 def check_for_redirect(index_url: str, response: rq.Response) -> bool:
@@ -116,7 +130,7 @@ def main(book_ids: range) -> None:
 
             download_image(book['image_url'])
         except rq.exceptions.HTTPError:
-            print(f'Книги с id={book_id} не существует.')
+            print(f'Книги с id={book_id} не существует.\n')
             continue
         except rq.exceptions.ConnectionError:
             print('Невозможно подключиться к серверу.'
@@ -130,12 +144,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Парсер для онлайн библиотеки \"Tululu\"'
     )
-    parser.add_argument('start_id',
+    parser.add_argument('--start_id',
                         type=int,
-                        help='Начальный id запрашиваемого интервала книг.')
-    parser.add_argument('end_id',
+                        help='Начальный id запрашиваемого интервала книг.',
+                        required=False,
+                        default=1)
+    parser.add_argument('--end_id',
                         type=int,
-                        help='Конечный id запрашиваемого интервала книг.')
+                        help='Конечный id запрашиваемого интервала книг.',
+                        required=False,
+                        default=10)
     args = parser.parse_args()
 
     start_id = args.start_id
