@@ -32,7 +32,7 @@ def download_txt(book_id: int, folder: str | None = 'books/') -> str:
 
     download_image(book['image_url'])
 
-    # return filepath
+    return filepath
 
 
 def download_image(url: str, folder: str | None = 'images/') -> None:
@@ -71,24 +71,31 @@ def get_book_credits(book_id: int) -> dict:
     div_comments = soup.find_all('div', class_='texts')
     for div_comment in div_comments:
         comment = div_comment.find('span', class_='black')
-        comments(comment.text)
+        comments.append(comment.text)
+
+    genres = []
+    span_genres = soup.find('span', class_='d_book').find_all('a')
+    for span_genre in span_genres:
+        genres.append(span_genre.text)
 
     return {
         'title': title,
         'author': author,
         'image_url': full_image_url,
         'comments': comments,
-        'genre': '',
+        'genres': genres,
     }
 
 
 def print_book_info(book: dict):
     print(
-        book['title'],
-        book['author'],
+        f'Заголовок: {book["title"]}',
+        f'Автор: {book["author"]}',
+        book["genres"],
+        '\n'.join(book['comments']),
         sep='\n'
     )
-    print('\n'.join(book['comments']))
+    print()
 
 
 def check_for_redirect(response: rq.Response) -> bool:
