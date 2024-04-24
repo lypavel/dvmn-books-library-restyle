@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit, unquote
 
@@ -7,9 +8,11 @@ from pathvalidate import sanitize_filename
 import requests as rq
 
 
-def download_txt(book_id: int, folder: str | None = 'books/') -> str:
-    text_url = env.str('BOOK_DOWNLOAD_URL')
-
+def download_txt(index_url: str,
+                 text_url: str,
+                 book_id: int,
+                 title: str,
+                 folder: str | None = 'books/') -> str:
     payload = {
         'id': book_id
     }
@@ -17,11 +20,7 @@ def download_txt(book_id: int, folder: str | None = 'books/') -> str:
     response = rq.get(text_url, params=payload)
     response.raise_for_status()
 
-    check_for_redirect(response)
-
-    book = get_book_credits(book_id)
-    print_book_info(book)
-    title = sanitize_filename(book['title'])
+    check_for_redirect(index_url, response)
 
     download_dir = Path(folder)
     download_dir.mkdir(exist_ok=True)
@@ -29,8 +28,6 @@ def download_txt(book_id: int, folder: str | None = 'books/') -> str:
 
     with open(filepath, 'w') as file:
         file.write(response.text)
-
-    download_image(book['image_url'])
 
     return filepath
 
@@ -51,12 +48,13 @@ def download_image(url: str, folder: str | None = 'images/') -> None:
         file.write(response.content)
 
 
-def get_book_credits(book_id: int) -> dict:
-    index_url = env.str('SITE_URL')
+def parse_book_page(index_url: str, book_id: int) -> dict:
     book_url = urljoin(index_url, f'b{book_id}')
 
     response = rq.get(book_url)
     response.raise_for_status()
+
+    check_for_redirect(index_url, response)
 
     soup = BeautifulSoup(response.text, 'lxml')
 
@@ -95,24 +93,52 @@ def print_book_info(book: dict):
         '\n'.join(book['comments']),
         sep='\n'
     )
-    print()
+    print()  # separate books with '\n'
 
 
-def check_for_redirect(response: rq.Response) -> bool:
-    if response.history:
+def check_for_redirect(index_url: str, response: rq.Response) -> bool:
+    if response.history and response.url == index_url:
         raise rq.exceptions.HTTPError
 
 
 def main(book_ids: range) -> None:
+    index_url = env.str('SITE_URL')
+    text_url = env.str('BOOK_DOWNLOAD_URL')
     for book_id in book_ids:
         try:
-            download_txt(book_id)
+            book = parse_book_page(index_url, book_id)
+            print_book_info(book)
+
+            download_txt(index_url,
+                         text_url,
+                         book_id,
+                         sanitize_filename(book['title']))
+
+            download_image(book['image_url'])
         except rq.exceptions.HTTPError:
+            print(f'Книги с id={book_id} не существует.')
             continue
+        except rq.exceptions.ConnectionError:
+            print('Невозможно подключиться к серверу.'
+                  'Проверьте ваше интернет-соединение и попробуйте снова.')
 
 
 if __name__ == '__main__':
     env = Env()
     env.read_env()
 
-    main(range(1, 11))
+    parser = argparse.ArgumentParser(
+        description='Парсер для онлайн библиотеки \"Tululu\"'
+    )
+    parser.add_argument('start_id',
+                        type=int,
+                        help='Начальный id запрашиваемого интервала книг.')
+    parser.add_argument('end_id',
+                        type=int,
+                        help='Конечный id запрашиваемого интервала книг.')
+    args = parser.parse_args()
+
+    start_id = args.start_id
+    end_id = args.end_id
+
+    main(range(start_id, end_id + 1))
