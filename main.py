@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit, unquote
 
@@ -21,16 +20,19 @@ def download_txt(book_id: int, folder: str | None = 'books/') -> str:
     check_for_redirect(response)
 
     book = get_book_credits(book_id)
+    print_book_info(book)
     title = sanitize_filename(book['title'])
 
-    os.makedirs(folder, exist_ok=True)
-    filepath = Path(folder, f'{book_id}. {title}.txt')
+    download_dir = Path(folder)
+    download_dir.mkdir(exist_ok=True)
+    filepath = download_dir / f'{book_id}. {title}.txt'
+
     with open(filepath, 'w') as file:
         file.write(response.text)
 
     download_image(book['image_url'])
 
-    return filepath
+    # return filepath
 
 
 def download_image(url: str, folder: str | None = 'images/') -> None:
@@ -41,8 +43,10 @@ def download_image(url: str, folder: str | None = 'images/') -> None:
     response = rq.get(url)
     response.raise_for_status()
 
-    os.makedirs(folder, exist_ok=True)
-    filepath = Path(folder, filename)
+    download_dir = Path(folder)
+    download_dir.mkdir(exist_ok=True)
+    filepath = download_dir / filename
+
     with open(filepath, 'wb') as file:
         file.write(response.content)
 
@@ -63,13 +67,28 @@ def get_book_credits(book_id: int) -> dict:
                     .find('img')['src']
     full_image_url = urljoin(index_url, image_url)
 
+    comments = []
+    div_comments = soup.find_all('div', class_='texts')
+    for div_comment in div_comments:
+        comment = div_comment.find('span', class_='black')
+        comments(comment.text)
+
     return {
         'title': title,
         'author': author,
         'image_url': full_image_url,
-        'comments': '',
+        'comments': comments,
         'genre': '',
     }
+
+
+def print_book_info(book: dict):
+    print(
+        book['title'],
+        book['author'],
+        sep='\n'
+    )
+    print('\n'.join(book['comments']))
 
 
 def check_for_redirect(response: rq.Response) -> bool:
