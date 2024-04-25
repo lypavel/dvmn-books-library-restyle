@@ -9,8 +9,7 @@ from pathvalidate import sanitize_filename
 import requests as rq
 
 
-def download_txt(index_url: str,
-                 text_url: str,
+def download_txt(text_url: str,
                  book_id: int,
                  title: str,
                  folder: str | None = 'books/') -> Path:
@@ -21,7 +20,7 @@ def download_txt(index_url: str,
     response = rq.get(text_url, params=payload)
     response.raise_for_status()
 
-    check_for_redirect(index_url, response)
+    check_for_redirect(response)
 
     download_dir = Path(folder)
     download_dir.mkdir(exist_ok=True)
@@ -55,7 +54,7 @@ def download_image(url: str, folder: str | None = 'images/') -> Path:
     return filepath
 
 
-def parse_book_page(index_url: str, book_html: str) -> dict:
+def parse_book_page(book_url: str, book_html: str) -> dict:
     soup = BeautifulSoup(book_html, 'lxml')
 
     title, author = soup.find('td', class_='ow_px_td')\
@@ -63,7 +62,7 @@ def parse_book_page(index_url: str, book_html: str) -> dict:
                         .text.split(' \xa0 :: \xa0 ')
     image_url = soup.find('div', class_='bookimage')\
                     .find('img')['src']
-    full_image_url = urljoin(index_url, image_url)
+    full_image_url = urljoin(book_url, image_url)
 
     comments = []
     div_comments = soup.find_all('div', class_='texts')
@@ -102,8 +101,8 @@ def print_book_info(book: dict) -> None:
     print()
 
 
-def check_for_redirect(index_url: str, response: rq.Response) -> bool:
-    if response.history and response.url == index_url:
+def check_for_redirect(response: rq.Response) -> None:
+    if response.history:
         raise rq.exceptions.HTTPError
 
 
@@ -134,18 +133,17 @@ def main() -> None:
 
     for book_id in range(start_id, end_id + 1):
         try:
-            book_url = urljoin(index_url, f'b{book_id}')
+            book_url = urljoin(index_url, f'b{book_id}/')
 
             response = rq.get(book_url)
             response.raise_for_status()
 
-            check_for_redirect(index_url, response)
+            check_for_redirect(response)
 
-            book = parse_book_page(index_url, response.text)
+            book = parse_book_page(response.url, response.text)
             print_book_info(book)
 
-            download_txt(index_url,
-                         text_url,
+            download_txt(text_url,
                          book_id,
                          sanitize_filename(book['title']))
 
