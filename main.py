@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+import time
 from urllib.parse import urljoin, urlsplit, unquote
 
 from bs4 import BeautifulSoup
@@ -153,8 +154,8 @@ def main() -> None:
             print(f'Книги с id={book_id} не существует.\n')
             continue
         except rq.exceptions.ConnectionError:
-            print('Невозможно подключиться к серверу.'
-                  'Проверьте ваше интернет-соединение и попробуйте снова.')
+            print('Невозможно подключиться к серверу. Переподключение...')
+            time.sleep(30)
 
 
 if __name__ == '__main__':
