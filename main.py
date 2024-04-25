@@ -54,15 +54,8 @@ def download_image(url: str, folder: str | None = 'images/') -> Path:
     return filepath
 
 
-def parse_book_page(index_url: str, book_id: int) -> dict:
-    book_url = urljoin(index_url, f'b{book_id}')
-
-    response = rq.get(book_url)
-    response.raise_for_status()
-
-    check_for_redirect(index_url, response)
-
-    soup = BeautifulSoup(response.text, 'lxml')
+def parse_book_page(index_url: str, book_html: str) -> dict:
+    soup = BeautifulSoup(book_html, 'lxml')
 
     title, author = soup.find('td', class_='ow_px_td')\
                         .find('h1')\
@@ -77,10 +70,8 @@ def parse_book_page(index_url: str, book_id: int) -> dict:
         comment = div_comment.find('span', class_='black')
         comments.append(comment.text)
 
-    genres = []
     span_genres = soup.find('span', class_='d_book').find_all('a')
-    for span_genre in span_genres:
-        genres.append(span_genre.text)
+    genres = [genre.text for genre in span_genres]
 
     return {
         'title': title,
@@ -107,7 +98,7 @@ def print_book_info(book: dict) -> None:
             sep='\n'
         )
 
-    print()  # separate book info with '\n'
+    print()
 
 
 def check_for_redirect(index_url: str, response: rq.Response) -> bool:
@@ -115,29 +106,7 @@ def check_for_redirect(index_url: str, response: rq.Response) -> bool:
         raise rq.exceptions.HTTPError
 
 
-def main(book_ids: range) -> None:
-    index_url = env.str('SITE_URL')
-    text_url = env.str('BOOK_DOWNLOAD_URL')
-    for book_id in book_ids:
-        try:
-            book = parse_book_page(index_url, book_id)
-            print_book_info(book)
-
-            download_txt(index_url,
-                         text_url,
-                         book_id,
-                         sanitize_filename(book['title']))
-
-            download_image(book['image_url'])
-        except rq.exceptions.HTTPError:
-            print(f'Книги с id={book_id} не существует.\n')
-            continue
-        except rq.exceptions.ConnectionError:
-            print('Невозможно подключиться к серверу.'
-                  'Проверьте ваше интернет-соединение и попробуйте снова.')
-
-
-if __name__ == '__main__':
+def main() -> None:
     env = Env()
     env.read_env()
 
@@ -159,4 +128,34 @@ if __name__ == '__main__':
     start_id = args.start_id
     end_id = args.end_id
 
-    main(range(start_id, end_id + 1))
+    index_url = env.str('SITE_URL')
+    text_url = env.str('BOOK_DOWNLOAD_URL')
+
+    for book_id in range(start_id, end_id + 1):
+        try:
+            book_url = urljoin(index_url, f'b{book_id}')
+
+            response = rq.get(book_url)
+            response.raise_for_status()
+
+            check_for_redirect(index_url, response)
+
+            book = parse_book_page(index_url, response.text)
+            print_book_info(book)
+
+            download_txt(index_url,
+                         text_url,
+                         book_id,
+                         sanitize_filename(book['title']))
+
+            download_image(book['image_url'])
+        except rq.exceptions.HTTPError:
+            print(f'Книги с id={book_id} не существует.\n')
+            continue
+        except rq.exceptions.ConnectionError:
+            print('Невозможно подключиться к серверу.'
+                  'Проверьте ваше интернет-соединение и попробуйте снова.')
+
+
+if __name__ == '__main__':
+    main()
