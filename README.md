@@ -34,8 +34,8 @@ python3 main.py --start_page <start_page> --end_page <end_page> --dest_folder <d
 `--skip_txt` - не скачивать тексты книг<br>
 `--skip_imgs` - не скачивать обложки книг<br>
 
-Все найденные книги скачиваются в директорию `./<dest_folder>/books`<br>
-Все найденные обложки скачиваются в директорию `./<dest_folder>/images`<br>
+Все найденные книги скачиваются в директорию `<dest_folder>/books`<br>
+Все найденные обложки скачиваются в директорию `<dest_folder>/images`<br>
 
 ***
 
