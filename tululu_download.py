@@ -44,9 +44,6 @@ def download_image(url: str,
     filename = urlsplit(unquote(url)).path.split('/')[-1]
     filepath = download_dir / filename
 
-    if filename == 'nopic.gif':
-        return filepath
-
     response = rq.get(url)
     response.raise_for_status()
 
