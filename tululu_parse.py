@@ -18,7 +18,8 @@ def parse_page(page_url: str, page_html: str) -> list[str]:
 def parse_book_data(book_url: str, book_html: str) -> dict:
     soup = BeautifulSoup(book_html, 'lxml')
 
-    title, author = soup.select_one('.ow_px_td h1').text.split(' \xa0 :: \xa0 ')
+    title, author = soup.select_one('.ow_px_td h1')\
+                        .text.split(' \xa0 :: \xa0 ')
 
     image_url = soup.select_one('.bookimage img')['src']
     full_image_url = urljoin(book_url, image_url)

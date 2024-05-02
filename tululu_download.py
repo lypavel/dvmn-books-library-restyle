@@ -12,6 +12,7 @@ def check_for_redirect(response: rq.Response) -> None:
 def download_txt(text_url: str,
                  book_id: int,
                  title: str,
+                 dest_folder: Path,
                  folder: str | None = 'books/') -> Path:
     payload = {
         'id': book_id
@@ -22,7 +23,7 @@ def download_txt(text_url: str,
 
     check_for_redirect(response)
 
-    download_dir = Path(folder)
+    download_dir = dest_folder / folder
     download_dir.mkdir(exist_ok=True)
     filepath = download_dir / f'{book_id}. {title}.txt'
     if filepath.exists():
@@ -34,8 +35,10 @@ def download_txt(text_url: str,
     return filepath
 
 
-def download_image(url: str, folder: str | None = 'images/') -> Path:
-    download_dir = Path(folder)
+def download_image(url: str,
+                   dest_folder: Path,
+                   folder: str | None = 'images/') -> Path:
+    download_dir = dest_folder / folder
     download_dir.mkdir(exist_ok=True)
 
     filename = urlsplit(unquote(url)).path.split('/')[-1]

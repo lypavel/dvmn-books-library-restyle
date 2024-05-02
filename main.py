@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 import json
+from pathlib import Path
 import time
 from urllib.parse import urljoin, urlsplit
 
@@ -34,16 +35,46 @@ def parse_script_arguments(last_page: int = 2) -> Namespace:
     parser = ArgumentParser(
         description='Парсер для онлайн библиотеки \"Tululu\"'
     )
-    parser.add_argument('--start_page',
-                        type=int,
-                        help='Начальный id запрашиваемого интервала книг.',
-                        required=False,
-                        default=1)
-    parser.add_argument('--end_page',
-                        type=int,
-                        help='Конечный id запрашиваемого интервала книг.',
-                        required=False,
-                        default=702)
+    parser.add_argument(
+        '--start_page',
+        type=int,
+        help='С какой страницы начать скачивание',
+        required=False,
+        default=1
+    )
+    parser.add_argument(
+        '--end_page',
+        type=int,
+        help='На какой странице закончить скачивание (не включительно)',
+        required=False,
+        default=702
+    )
+    parser.add_argument(
+        '--dest_folder',
+        type=str,
+        help='Путь к каталогу с результатами парсинга',
+        required=False,
+        default='.'
+    )
+    parser.add_argument(
+        '--json_file',
+        type=str,
+        help='Путь к json-файлу с информацией о скачанных книгах',
+        required=False,
+        default='downloaded_books.json'
+    )
+    parser.add_argument(
+        '--skip_imgs',
+        help='Не скачивать обложки книг',
+        required=False,
+        action='store_true'
+    )
+    parser.add_argument(
+        '--skip_txt',
+        help='Не скачивать текст книг',
+        required=False,
+        action='store_true'
+    )
 
     return parser.parse_args()
 
@@ -56,6 +87,8 @@ def main() -> None:
 
     start_page = args.start_page
     end_page = args.end_page
+    dest_folder = Path(args.dest_folder)
+    dest_folder.mkdir(exist_ok=True)
 
     category_url = env.str('CATEGORY_URL')
     text_url = env.str('BOOK_DOWNLOAD_URL')
@@ -83,14 +116,26 @@ def main() -> None:
 
                 book = parse_book_data(book_response.url, book_response.text)
                 print_book_info(book)
-                book_path = download_txt(text_url,
-                                         book_id,
-                                         sanitize_filename(book['title']))
-                img_src = download_image(book['image_url'])
+
+                book_path = None
+                if not args.skip_txt:
+                    book_path = download_txt(
+                        text_url,
+                        book_id,
+                        sanitize_filename(book['title']),
+                        dest_folder
+                    ).as_posix()
+
+                img_src = None
+                if not args.skip_imgs:
+                    img_src = download_image(
+                        book['image_url'],
+                        dest_folder
+                    ).as_posix()
 
                 book.update({
-                    'book_path': book_path.as_posix(),
-                    'img_src': img_src.as_posix()
+                    'book_path': book_path,
+                    'img_src': img_src
                 })
                 book.pop('image_url')
                 books_json.append(book)
@@ -98,7 +143,8 @@ def main() -> None:
                 print(f'Книги с id={book_id} не существует.\n')
                 continue
 
-    with open('downloaded_books.json', 'w') as json_file:
+    json_path = Path(args.json_file)
+    with open(json_path, 'w') as json_file:
         json.dump(books_json, json_file, ensure_ascii=False, indent=2)
 
 
