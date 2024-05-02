@@ -161,6 +161,10 @@ cython_debug/
 
 # Downloaded books
 books/
+downloaded_books.json
 
 # Downloaded book covers
 images/
+
+# ruff settings
+pyproject.toml

@@ -18,7 +18,7 @@
 4. Создайте в корневой директории с кодом файл `.env` со следующим содержимым:
     ```env
     BOOK_DOWNLOAD_URL='https://tululu.org/txt.php'
-    SITE_URL='https://tululu.org/'
+    CATEGORY_URL='https://tululu.org/l55/'
     ```
 
 ## Использование
