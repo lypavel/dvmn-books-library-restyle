@@ -30,7 +30,7 @@ def print_book_info(book: dict) -> None:
     print()
 
 
-def parse_script_arguments() -> Namespace:
+def parse_script_arguments(last_page: int = 2) -> Namespace:
     parser = ArgumentParser(
         description='Парсер для онлайн библиотеки \"Tululu\"'
     )
@@ -43,7 +43,7 @@ def parse_script_arguments() -> Namespace:
                         type=int,
                         help='Конечный id запрашиваемого интервала книг.',
                         required=False,
-                        default=2)
+                        default=702)
 
     return parser.parse_args()
 
@@ -61,7 +61,7 @@ def main() -> None:
     text_url = env.str('BOOK_DOWNLOAD_URL')
     books_json = []
 
-    for page in range(start_page, end_page + 1):
+    for page in range(start_page, end_page):
         try:
             page_url = urljoin(category_url, str(page))
             page_response = rq.get(page_url)
@@ -99,7 +99,7 @@ def main() -> None:
                 continue
 
     with open('downloaded_books.json', 'w') as json_file:
-        json.dump(books_json, json_file, ensure_ascii=False)
+        json.dump(books_json, json_file, ensure_ascii=False, indent=2)
 
 
 if __name__ == '__main__':
