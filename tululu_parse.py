@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 
-def parse_page(page_url: str, page_html: str) -> list[str]:
+def parse_category_page(page_url: str, page_html: str) -> list[str]:
     soup = BeautifulSoup(page_html, 'lxml')
 
     book_tables = soup.select('.d_book')
@@ -15,7 +15,7 @@ def parse_page(page_url: str, page_html: str) -> list[str]:
     return book_urls
 
 
-def parse_book_data(book_url: str, book_html: str) -> dict:
+def parse_book_page(book_url: str, book_html: str) -> dict:
     soup = BeautifulSoup(book_html, 'lxml')
 
     title, author = soup.select_one('.ow_px_td h1')\

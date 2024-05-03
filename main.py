@@ -8,7 +8,7 @@ from environs import Env
 import requests as rq
 from pathvalidate import sanitize_filename
 
-from tululu_parse import parse_page, parse_book_data
+from tululu_parse import parse_category_page, parse_book_page
 from tululu_download import download_txt, download_image, check_for_redirect
 
 
@@ -92,7 +92,7 @@ def main() -> None:
 
     category_url = env.str('CATEGORY_URL')
     text_url = env.str('BOOK_DOWNLOAD_URL')
-    books_json = []
+    books = []
 
     for page in range(start_page, end_page):
         try:
@@ -105,7 +105,7 @@ def main() -> None:
             print(f'Страницы с номером {page} не существует.\n')
             continue
 
-        book_urls = parse_page(page_url, page_response.text)
+        book_urls = parse_category_page(page_url, page_response.text)
 
         for book_url in book_urls:
             book_id = urlsplit(book_url).path.strip('/b')
@@ -114,7 +114,7 @@ def main() -> None:
                 book_response.raise_for_status()
                 check_for_redirect(book_response)
 
-                book = parse_book_data(book_response.url, book_response.text)
+                book = parse_book_page(book_response.url, book_response.text)
                 print_book_info(book)
 
                 book_path = None
@@ -138,19 +138,21 @@ def main() -> None:
                     'img_src': img_src
                 })
                 book.pop('image_url')
-                books_json.append(book)
+                books.append(book)
             except rq.exceptions.HTTPError:
                 print(f'Книги с id={book_id} не существует.\n')
                 continue
 
     json_path = Path(args.json_file)
     with open(json_path, 'w') as json_file:
-        json.dump(books_json, json_file, ensure_ascii=False, indent=2)
+        json.dump(books, json_file, ensure_ascii=False, indent=2)
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except rq.exceptions.ConnectionError:
-        print('Невозможно подключиться к серверу. Переподключение...')
-        time.sleep(30)
+    while True:
+        try:
+            main()
+            break
+        except rq.exceptions.ConnectionError:
+            print('Невозможно подключиться к серверу. Переподключение...')
+            time.sleep(30)
