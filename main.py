@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 import json
 from pathlib import Path
-import time
 from urllib.parse import urljoin, urlsplit
 
 from environs import Env
@@ -9,7 +8,8 @@ import requests as rq
 from pathvalidate import sanitize_filename
 
 from tululu_parse import parse_category_page, parse_book_page
-from tululu_download import download_txt, download_image, check_for_redirect
+from tululu_download import download_txt, download_image, check_for_redirect, \
+    send_get_request
 
 
 def print_book_info(book: dict) -> None:
@@ -97,8 +97,7 @@ def main() -> None:
     for page in range(start_page, end_page):
         try:
             page_url = urljoin(category_url, str(page))
-            page_response = rq.get(page_url)
-            page_response.raise_for_status()
+            page_response = send_get_request(page_url)
 
             check_for_redirect(page_response)
         except rq.exceptions.HTTPError:
@@ -110,8 +109,7 @@ def main() -> None:
         for book_url in book_urls:
             book_id = urlsplit(book_url).path.strip('/b')
             try:
-                book_response = rq.get(book_url)
-                book_response.raise_for_status()
+                book_response = send_get_request(book_url)
                 check_for_redirect(book_response)
 
                 book = parse_book_page(book_response.url, book_response.text)
@@ -149,10 +147,4 @@ def main() -> None:
 
 
 if __name__ == '__main__':
-    while True:
-        try:
-            main()
-            break
-        except rq.exceptions.ConnectionError:
-            print('Невозможно подключиться к серверу. Переподключение...')
-            time.sleep(30)
+    main()

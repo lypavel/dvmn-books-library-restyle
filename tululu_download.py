@@ -1,7 +1,23 @@
+import time
 from pathlib import Path
+from urllib.parse import urlsplit, unquote
 
 import requests as rq
-from urllib.parse import urlsplit, unquote
+
+
+def send_get_request(url: str, payload: dict | None = None) -> rq.Response:
+    attempt = 1
+    max_fast_attempts = 3
+    while True:
+        try:
+            response = rq.get(url, params=payload)
+            response.raise_for_status()
+            return response
+        except rq.exceptions.ConnectionError:
+            print('Невозможно подключиться к серверу. Переподключение...')
+            if attempt > max_fast_attempts:
+                time.sleep(30)
+            attempt += 1
 
 
 def check_for_redirect(response: rq.Response) -> None:
@@ -18,9 +34,7 @@ def download_txt(text_url: str,
         'id': book_id
     }
 
-    response = rq.get(text_url, params=payload)
-    response.raise_for_status()
-
+    response = send_get_request(text_url, payload=payload)
     check_for_redirect(response)
 
     download_dir = dest_folder / folder
@@ -44,8 +58,7 @@ def download_image(url: str,
     filename = urlsplit(unquote(url)).path.split('/')[-1]
     filepath = download_dir / filename
 
-    response = rq.get(url)
-    response.raise_for_status()
+    response = send_get_request(url)
 
     if filepath.exists():
         return filepath
