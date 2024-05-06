@@ -48,7 +48,9 @@ if __name__ == '__main__':
         autoescape=select_autoescape(['html', 'xml'])
     )
 
-    json_path = Path(env.str('PATH_TO_BOOKS_JSON', 'downloaded_books.json'))
+    json_path = Path(
+        env.str('PATH_TO_BOOKS_JSON', 'static/downloaded_books.json')
+    )
     books = load_json(json_path)
     pages_dir = Path('pages')
 
