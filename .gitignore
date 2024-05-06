@@ -168,3 +168,6 @@ images/
 
 # ruff settings
 pyproject.toml
+
+# rendered_pages
+index.html
