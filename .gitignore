@@ -159,14 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Downloaded books
-media/
-books/
-downloaded_books.json
-
-# Downloaded book covers
-images/
-
 # ruff settings
 pyproject.toml
 
