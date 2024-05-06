@@ -1,11 +1,6 @@
-# Скрипт для скачивания книг с tululu.org
+# Библиотека научной фантастики
 
-С помощью этого скрипта вы сможете скачивать книги с обложками с сайта [tululu.org](https://tululu.org/), а также просматривать следующую информацию по каждой запрошенной книге:
-
-* Название
-* Автор
-* Жанры
-* Текст комментариев
+Готовый макет оффлайн сайта-библиотеки с возможностью самостоятельно скачивать интересующие вас книги с сайта онлайн-библиотеки [tululu.org](https://tululu.org/)
 
 ## Установка
 
@@ -18,24 +13,59 @@
 4. Создайте в корневой директории с кодом файл `.env` со следующим содержимым:
     ```env
     BOOK_DOWNLOAD_URL='https://tululu.org/txt.php'
-    CATEGORY_URL='https://tululu.org/l55/'
+    CATEGORY_URL='https://tululu.org/l55/'  
+
+    SITE_PORT='5500'
+    SITE_HOST='127.0.0.1'
+    PATH_TO_BOOKS_JSON='static/downloaded_books.json'
     ```
 
-## Использование
+    `BOOK_DOWNLOAD_URL` - общий URL с текстами книг<br>
+    `CATEGORY_URL` - URL интересующей вас категории книг<br>
+    `SITE_PORT` - порт, на котором запустится локальный сайт<br>
+    `SITE_HOST` - хост, на котором запустится локальный сайт<br>
+    `PATH_TO_BOOKS_JSON` - путь к json файлу с информацией о скачанных книгах<br>
+
+## Скачивание книг с [tululu.org](https://tululu.org/)
+
+С помощью этого скрипта вы сможете скачивать книги с обложками с сайта [tululu.org](https://tululu.org/), а также просматривать следующую информацию по каждой запрошенной книге:
+
+* Название
+* Автор
+* Жанры
+* Текст комментариев
+
+### Использование
 
 ```shell
-python3 main.py --start_page <start_page> --end_page <end_page> --dest_folder <dest_folder> --json_file <json_file> --skip_imgs --skip_txt
+python3 download_books.py --start_page <start_page> --end_page <end_page> --dest_folder <dest_folder> --json_file <json_file> --skip_imgs --skip_txt
 ```
 
 `<start_page>` - с какой страницы выбранной категории начать скачивание, по-умолчанию `1`<br>
 `<end_page>` - на какой странице закончить скачивание (не включительно), по-умолчанию `702`<br>
 `<dest_folder>` - в какой директории хранить скачанные тексты и обложки книг, по-умолчанию `.`<br>
-`<json_file>` - путь к json-файлу с информацией о скачанных книгах, по-умолчанию `downloaded_books.json`<br>
+`<json_file>` - путь к json-файлу с информацией о скачанных книгах, по-умолчанию `static/downloaded_books.json`<br>
 `--skip_txt` - не скачивать тексты книг<br>
 `--skip_imgs` - не скачивать обложки книг<br>
 
+**ВНИМАНИЕ!** Если вы изменили путь в `<json_file>`, то его следует также изменить и в `PATH_TO_BOOKS_JSON` в `.env`.<br>
+
 Все найденные книги скачиваются в директорию `<dest_folder>/books`<br>
 Все найденные обложки скачиваются в директорию `<dest_folder>/images`<br>
+
+## Запуск сайта со скачанными книгами
+
+```shell
+python3 render_website.py
+```
+В директории `./pages` будут созданы страницы, содержащие информацию о скачанных книгах.<br>
+По-умолчанию сайт будет доступен по адресу [127.0.0.1:5500](127.0.0.1:5500).
+
+### Пример работы сайта на Github Pages
+
+[https://lypavel.github.io/dvmn-books-library-restyle/index.html](https://lypavel.github.io/dvmn-books-library-restyle/index.html)
+
+Пример работы сайта с первыми четырьмя скачанными страницами категории "Научная фантастика".
 
 ***
 
