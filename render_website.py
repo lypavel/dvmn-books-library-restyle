@@ -51,5 +51,6 @@ if __name__ == '__main__':
     on_reload(env, books, pages_dir)
 
     server = Server()
-    server.watch('index_template.html', on_reload)
+    server.watch('templates/index_template.html',
+                 lambda: on_reload(env, books, pages_dir))
     server.serve(port=8000, host='0.0.0.0', root='.')
