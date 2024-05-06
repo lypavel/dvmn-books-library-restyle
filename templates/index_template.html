@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link rel="stylesheet" href="../static/css/bootstrap.min.css">
-    <link rel="icon" type="image/png" href="/static/favicon.png">
+    <link rel="icon" type="image/png" href="../static/favicon.png">
 
     <title>Оффлайн библиотека - {{current_page}} страница</title>
   </head>
@@ -40,7 +40,7 @@
               <div class="card mb-3" style="max-width: 540px;">
                 <div class="row no-gutters">
                   <div class="col-md-4">
-                    <img src="{{book.img_src|urlencode}}" class="card-img" alt="Обложка книги {{book.title}}" title="{{book.title}}">
+                    <img src="../{{book.img_src|urlencode}}" class="card-img" alt="Обложка книги {{book.title}}" title="{{book.title}}">
                   </div>
                   <div class="col-md-8">
                     <div class="card-body">
@@ -52,7 +52,7 @@
                         {% endfor %}
                       </p>
                       <p class="card-link">
-                        <a href="{{book.book_path|urlencode}}" target="_blank">Читать</a>
+                        <a href="../{{book.book_path|urlencode}}" target="_blank">Читать</a>
                       </p>
                     </div>
                   </div>

@@ -7,9 +7,9 @@ from environs import Env
 import requests as rq
 from pathvalidate import sanitize_filename
 
-from tululu_parse import parse_category_page, parse_book_page
-from tululu_download import download_txt, download_image, check_for_redirect, \
-    send_get_request
+from tululu_utils.tululu_parse import parse_category_page, parse_book_page
+from tululu_utils.tululu_download import download_txt, download_image, \
+    check_for_redirect, send_get_request
 
 
 def print_book_info(book: dict) -> None:
@@ -61,7 +61,7 @@ def parse_script_arguments(last_page: int = 2) -> Namespace:
         type=str,
         help='Путь к json-файлу с информацией о скачанных книгах',
         required=False,
-        default='downloaded_books.json'
+        default='static/downloaded_books.json'
     )
     parser.add_argument(
         '--skip_imgs',
@@ -132,8 +132,8 @@ def main() -> None:
                     ).as_posix()
 
                 book.update({
-                    'book_path': f'/{book_path}',
-                    'img_src': f'/{img_src}'
+                    'book_path': book_path,
+                    'img_src': img_src
                 })
                 book.pop('image_url')
                 books.append(book)

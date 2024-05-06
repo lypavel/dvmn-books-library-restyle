@@ -1,8 +1,9 @@
 import json
-from livereload import Server
 from pathlib import Path
 
+from environs import Env
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from livereload import Server
 from more_itertools import chunked
 
 
@@ -38,19 +39,25 @@ def on_reload(env: Environment, books: list, pages_dir: Path) -> None:
 
 
 if __name__ == '__main__':
+    env = Env()
+    env.read_env()
+
     templates_path = Path('templates')
-    env = Environment(
+    jinja_env = Environment(
         loader=FileSystemLoader(templates_path),
         autoescape=select_autoescape(['html', 'xml'])
     )
 
-    json_path = Path('downloaded_books.json')
+    json_path = Path(env.str('PATH_TO_BOOKS_JSON', 'downloaded_books.json'))
     books = load_json(json_path)
     pages_dir = Path('pages')
 
-    on_reload(env, books, pages_dir)
+    on_reload(jinja_env, books, pages_dir)
+
+    host = env.str('SITE_HOST', '127.0.0.1')
+    port = env.str('SITE_PORT', '5500')
 
     server = Server()
     server.watch('templates/index_template.html',
-                 lambda: on_reload(env, books, pages_dir))
-    server.serve(port=8000, host='0.0.0.0', root='.')
+                 lambda: on_reload(jinja_env, books, pages_dir))
+    server.serve(port=port, host=host, root='.')
