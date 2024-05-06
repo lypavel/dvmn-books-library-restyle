@@ -171,3 +171,4 @@ pyproject.toml
 
 # rendered_pages
 index.html
+pages/*.html
