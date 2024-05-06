@@ -63,9 +63,12 @@ python3 render_website.py
 
 ### Пример работы сайта на Github Pages
 
-[https://lypavel.github.io/dvmn-books-library-restyle/index.html](https://lypavel.github.io/dvmn-books-library-restyle/index.html)
+<details>
+  <summary>Внешний вид первой страницы библиотеки</summary>
+  <img src="https://github.com/lypavel/dvmn-books-library-restyle/assets/157053921/eb53031b-b3a9-4f69-b9d0-3106f97a97cc" alt="Внешний вид первой страницы библиотеки" width="500">
+</details>
 
-Пример работы сайта с первыми четырьмя скачанными страницами категории "Научная фантастика".
+[Пример работы сайта с первыми четырьмя скачанными страницами категории "Научная фантастика".](https://lypavel.github.io/dvmn-books-library-restyle/index.html)
 
 ***
 
