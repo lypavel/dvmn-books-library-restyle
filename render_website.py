@@ -1,5 +1,5 @@
-from http.server import HTTPServer, SimpleHTTPRequestHandler
 import json
+from livereload import Server
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -11,7 +11,7 @@ def load_json(json_path: Path) -> list:
     return books
 
 
-if __name__ == '__main__':
+def on_reload() -> None:
     templates_path = Path('templates')
     env = Environment(
         loader=FileSystemLoader(templates_path),
@@ -27,5 +27,10 @@ if __name__ == '__main__':
     with open('index.html', 'w', encoding='utf-8') as index:
         index.write(rendered_page)
 
-    server = HTTPServer(('0.0.0.0', 8000), SimpleHTTPRequestHandler)
-    server.serve_forever()
+
+if __name__ == '__main__':
+    on_reload()
+
+    server = Server()
+    server.watch('templates/*.html', on_reload)
+    server.serve(port=8000, host='0.0.0.0', root='.')
