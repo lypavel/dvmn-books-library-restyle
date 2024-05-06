@@ -1,8 +1,10 @@
 import json
 from livereload import Server
+from math import ceil
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from more_itertools import chunked
 
 
 def load_json(json_path: Path) -> list:
@@ -20,8 +22,12 @@ def on_reload() -> None:
 
     index_template = env.get_template('index_template.html')
 
+    books = load_json('downloaded_books.json')
+    books_in_row = 2
+    book_rows = chunked(books, books_in_row)
+
     rendered_page = index_template.render(
-        books=load_json('downloaded_books.json')
+        book_rows=book_rows
     )
 
     with open('index.html', 'w', encoding='utf-8') as index:
