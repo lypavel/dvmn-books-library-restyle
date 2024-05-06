@@ -1,6 +1,5 @@
 import json
 from livereload import Server
-from math import ceil
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
