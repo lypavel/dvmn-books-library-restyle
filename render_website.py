@@ -14,20 +14,24 @@ def load_json(json_path: Path) -> list:
 
 def on_reload(env: Environment, books: list, pages_dir: Path) -> None:
     books_per_page = 20
-    book_pages = chunked(books, books_per_page)
+    book_pages = list(chunked(books, books_per_page))
+    last_page = len(book_pages)
 
-    for page_num, book_page in enumerate(book_pages):
+    for page_num, book_page in enumerate(book_pages, start=1):
 
         books_in_row = 2
         book_rows = chunked(book_page, books_in_row)
 
         index_template = env.get_template('index_template.html')
+
         rendered_page = index_template.render(
-            book_rows=book_rows
+            book_rows=book_rows,
+            current_page=page_num,
+            last_page=last_page
         )
 
         pages_dir.mkdir(exist_ok=True)
-        with open(pages_dir / f'index{page_num + 1}.html',
+        with open(pages_dir / f'index{page_num}.html',
                   'w',
                   encoding='utf-8') as index:
             index.write(rendered_page)
@@ -44,7 +48,7 @@ if __name__ == '__main__':
     books = load_json(json_path)
     pages_dir = Path('pages')
 
-    on_reload(env, books)
+    on_reload(env, books, pages_dir)
 
     server = Server()
     server.watch('index_template.html', on_reload)

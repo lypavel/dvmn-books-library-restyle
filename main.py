@@ -54,7 +54,7 @@ def parse_script_arguments(last_page: int = 2) -> Namespace:
         type=str,
         help='Путь к каталогу с результатами парсинга',
         required=False,
-        default='.'
+        default='media/'
     )
     parser.add_argument(
         '--json_file',
@@ -132,8 +132,8 @@ def main() -> None:
                     ).as_posix()
 
                 book.update({
-                    'book_path': book_path,
-                    'img_src': img_src
+                    'book_path': f'/{book_path}',
+                    'img_src': f'/{img_src}'
                 })
                 book.pop('image_url')
                 books.append(book)
