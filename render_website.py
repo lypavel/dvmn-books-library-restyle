@@ -49,7 +49,7 @@ if __name__ == '__main__':
     )
 
     json_path = Path(
-        env.str('PATH_TO_BOOKS_JSON', 'static/downloaded_books.json')
+        env.str('PATH_TO_BOOKS_JSON', 'media/downloaded_books.json')
     )
     books = load_json(json_path)
     pages_dir = Path('pages')

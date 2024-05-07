@@ -17,7 +17,7 @@
 
     SITE_PORT='5500'
     SITE_HOST='127.0.0.1'
-    PATH_TO_BOOKS_JSON='static/downloaded_books.json'
+    PATH_TO_BOOKS_JSON='media/downloaded_books.json'
     ```
 
     `BOOK_DOWNLOAD_URL` - общий URL с текстами книг<br>
@@ -44,7 +44,7 @@ python3 download_books.py --start_page <start_page> --end_page <end_page> --dest
 `<start_page>` - с какой страницы выбранной категории начать скачивание, по-умолчанию `1`<br>
 `<end_page>` - на какой странице закончить скачивание (не включительно), по-умолчанию `702`<br>
 `<dest_folder>` - в какой директории хранить скачанные тексты и обложки книг, по-умолчанию `.`<br>
-`<json_file>` - путь к json-файлу с информацией о скачанных книгах, по-умолчанию `static/downloaded_books.json`<br>
+`<json_file>` - путь к json-файлу с информацией о скачанных книгах, по-умолчанию `media/downloaded_books.json`<br>
 `--skip_txt` - не скачивать тексты книг<br>
 `--skip_imgs` - не скачивать обложки книг<br>
 
